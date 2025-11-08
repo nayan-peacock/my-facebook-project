@@ -1,0 +1,16 @@
+flask
+flask-sqlalchemy
+flask-cors
+flask-jwt-extended
+flask-socketio
+werkzeug
+pyngrok
+python-dotenv
+pillow
+bleach
+emoji
+profanity-check
+textblob
+flask-limiter
+redis
+eventlet
