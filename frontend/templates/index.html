@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceConnect - Connect with Friends</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div id="authContainer" class="auth-container">
+        <div class="auth-box">
+            <div class="auth-logo">FaceConnect</div>
+            <div class="auth-subtitle">Connect with friends and the world around you</div>
+            
+            <div id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Email address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="login()">Log In</button>
+                <div style="text-align: center; color: #65676b; margin-bottom: 15px;">or</div>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="showRegisterForm()">Create New Account</button>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="regFirstName" placeholder="First Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="regLastName" placeholder="Last Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="regEmail" placeholder="Email address" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="regUsername" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="regPassword" placeholder="Password (at least 8 characters)" required>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="regBirthDate" required>
+                </div>
+                <div class="form-group">
+                    <select id="regGender">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="register()">Sign Up</button>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="showLoginForm()">Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <header>
+            <div class="header-content">
+                <div class="logo" onclick="loadFeed()">FaceConnect</div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search FaceConnect" id="searchInput" onkeyup="search()">
+                </div>
+                <div class="header-icons">
+                    <button class="icon-btn" onclick="loadFeed()">🏠</button>
+                    <button class="icon-btn" onclick="showFriendRequests()">
+                        👥
+                        <span class="badge" id="friendRequestBadge" style="display: none;">0</span>
+                    </button>
+                    <button class="icon-btn" onclick="showMessages()">
+                        💬
+                        <span class="badge" id="messageBadge" style="display: none;">0</span>
+                    </button>
+                    <button class="icon-btn" onclick="showNotifications()">
+                        🔔
+                        <span class="badge" id="notificationBadge" style="display: none;">0</span>
+                    </button>
+                    <button class="icon-btn" onclick="showProfile()">👤</button>
+                    <button class="icon-btn" onclick="logout()">🚪</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="main-content">
+                <aside class="sidebar">
+                    <div class="sidebar-item" onclick="showProfile()">
+                        <img src="https://via.placeholder.com/40" alt="Profile" id="sidebarAvatar">
+                        <span id="sidebarName">Your Name</span>
+                    </div>
+                    <div class="sidebar-item" onclick="loadFeed()">
+                        <span style="font-size: 24px; margin-right: 12px;">📰</span>
+                        <span>News Feed</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showMessages()">
+                        <span style="font-size: 24px; margin-right: 12px;">💬</span>
+                        <span>Messages</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showFriends()">
+                        <span style="font-size: 24px; margin-right: 12px;">👥</span>
+                        <span>Friends</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showSavedPosts()">
+                        <span style="font-size: 24px; margin-right: 12px;">🔖</span>
+                        <span>Saved</span>
+                    </div>
+                </aside>
+
+                <main class="feed">
+                    <div class="stories-container" id="storiesContainer">
+                        <div class="story" onclick="showCreateStory()">
+                            <img src="https://via.placeholder.com/110x190" alt="Create Story">
+                            <div class="story-name">➕ Create Story</div>
+                        </div>
+                    </div>
+
+                    <div class="create-post">
+                        <div class="post-input-container">
+                            <img src="https://via.placeholder.com/40" alt="Avatar" id="createPostAvatar">
+                            <input type="text" class="post-input" placeholder="What's on your mind?" onclick="showCreatePost()" readonly>
+                        </div>
+                        <div class="post-actions">
+                            <div class="post-action" onclick="showCreatePost()">
+                                <span>🎥</span>
+                                <span>Live Video</span>
+                            </div>
+                            <div class="post-action" onclick="showCreatePost()">
+                                <span>📷</span>
+                                <span>Photo/Video</span>
+                            </div>
+                            <div class="post-action" onclick="showCreatePost()">
+                                <span>😊</span>
+                                <span>Feeling/Activity</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="postsContainer"></div>
+                </main>
+
+                <aside class="widgets">
+                    <div class="widget">
+                        <div class="widget-title">Friend Requests</div>
+                        <div id="friendRequestsWidget"></div>
+                    </div>
+
+                    <div class="widget">
+                        <div class="widget-title">Online Friends</div>
+                        <div id="onlineFriendsWidget"></div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Create Post</div>
+                <button class="close-btn" onclick="closeModal('createPostModal')">×</button>
+            </div>
+            <div class="form-group">
+                <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+            </div>
+            <div class="form-group">
+                <label>📍 Location</label>
+                <input type="text" id="postLocation" placeholder="Add location">
+            </div>
+            <div class="form-group">
+                <label>😊 Feeling/Activity</label>
+                <select id="postFeeling">
+                    <option value="">Select feeling</option>
+                    <option value="happy">😊 Happy</option>
+                    <option value="excited">🎉 Excited</option>
+                    <option value="loved">❤ Loved</option>
+                    <option value="blessed">🙏 Blessed</option>
+                    <option value="sad">😢 Sad</option>
+                    <option value="angry">😠 Angry</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Privacy</label>
+                <select id="postPrivacy">
+                    <option value="public">🌍 Public</option>
+                    <option value="friends">👥 Friends</option>
+                    <option value="private">🔒 Only Me</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="createPost()">Post</button>
+        </div>
+    </div>
+
+    <div id="notificationsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Notifications</div>
+                <button class="close-btn" onclick="closeModal('notificationsModal')">×</button>
+            </div>
+            <div id="notificationsList"></div>
+        </div>
+    </div>
+
+   <script src="{{ url_for('static', filename='js/main.js?v=1.1') }}"></script>
+</body>
+</html>
